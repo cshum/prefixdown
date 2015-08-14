@@ -10,6 +10,7 @@
   "devDependencies": {
     "levelup": "^1.2.1",
     "memdown": "^1.0.0",
+    "rimraf": "^2.4.2",
     "tape": "^4.1.0"
   },
   "repository": {
@@ -26,6 +27,6 @@
     "test": "test"
   },
   "scripts": {
-    "test": "node test"
+    "test": "node test/test.js"
   }
 }

@@ -68,7 +68,7 @@ module.exports = function(db){
 
     abs.AbstractLevelDOWN.call(this, prefix);
 
-    this.prefix = prefix;
+    this.prefix = prefix || '';
   }
 
   inherits(PrefixDOWN, abs.AbstractLevelDOWN);
@@ -87,7 +87,7 @@ module.exports = function(db){
   };
 
   PrefixDOWN.prototype._del = function (key, options, cb) {
-    db.get(concat(this.prefix, key), encoding(options), cb);
+    db.del(concat(this.prefix, key), encoding(options), cb);
   };
 
   PrefixDOWN.prototype._batch = function(operations, options, cb) {
