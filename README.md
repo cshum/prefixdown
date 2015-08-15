@@ -9,7 +9,7 @@ npm install prefixdown
 ```
 
 Unlike Sublevel, PrefixDOWN does not modify, nor set a wrapper on top of current LevelUP instance. 
-So that it can be used on any existing LevelUP modules and mostly compatible.
+So that it can be used on any existing LevelUP based libraries.
 
 ```js
 var levelup = require('levelup');
