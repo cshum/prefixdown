@@ -10,14 +10,14 @@ Unlike Sublevel, PrefixDOWN does not modify, nor set a wrapper on top of current
 
 ```js
 var levelup = require('levelup');
-var prefixdown = require('prefixdown');
+var prefix = require('prefixdown');
 
 var db = levelup('./db'); //root levelup instance
-var prefix = prefixdown(db);
+var prefixdown = prefix(db); //wrap with prefixdown factory
 
 //prefixed levelup instances. Location as prefix
-var dbA = levelup('!a!', {db: prefix });
-var dbB = levelup('!b!', {db: prefix });
+var dbA = levelup('!a!', {db: prefixdown });
+var dbB = levelup('!b!', {db: prefixdown });
 
 ```
 
