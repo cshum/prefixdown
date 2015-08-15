@@ -23,11 +23,11 @@ var dbA = levelup('!a!', {db: prefixdown });
 var dbB = levelup('!b!', {db: prefixdown });
 
 dbA.put('foo', 'bar', function(){
-  dbB.put('foo', 'boo', function(){
+  dbB.put('foo', 'foo', function(){
     db.createReadStream().on('data', function(data){
       //Results from root db
       {key: '!a!foo', value: 'bar'}, 
-      {key: '!b!foo', value: 'boo'}
+      {key: '!b!foo', value: 'foo'}
     });
   });
 });
