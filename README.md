@@ -1,12 +1,15 @@
 # PrefixDOWN
 
-LevelDB partition using prefixed keys, as a LevelDOWN backed by LevelUP.
+[LevelDB](https://github.com/Level/levelup) partition using prefixed keys, as a LevelDOWN backed by LevelUP.
+
+[![Build Status](https://travis-ci.org/cshum/prefixdown.svg?branch=master)](https://travis-ci.org/cshum/prefixdown)
 
 ```bash
 npm install prefixdown
 ```
 
-Unlike Sublevel, PrefixDOWN does not modify, nor set a wrapper on top of current LevelUP instance. So that it can be used on many existing LevelUP modules.
+Unlike Sublevel, PrefixDOWN does not modify, nor set a wrapper on top of current LevelUP instance. 
+So that it can be used on any existing LevelUP modules and mostly compatible.
 
 ```js
 var levelup = require('levelup');
