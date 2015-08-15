@@ -21,31 +21,24 @@ function encoding(o) {
 
 function ltgt(prefix, x){
   var r = !!x.reverse;
-  var at = xtend(x);
-  var START = at.keyAsBuffer ? Buffer(prefix) : prefix;
-  var END = concat(prefix, at.keyAsBuffer ? Buffer([0xff]) : '\xff');
 
+  var at = {};
   ['lte','gte','lt','gt','start','end'].forEach(function(key){
+    at[key] = x[key];
     delete x[key];
   });
 
-  if(at.gte) 
-    x.gte = concat(prefix, at.gte);
-  else if(at.gt) 
-    x.gt = concat(prefix, at.gt);
-  else if(at.start) 
-    x[r ? 'end':'start'] = concat(prefix, at.start);
-  else 
-    x[r ? 'end':'start'] = START;
+  if(at.gte) x.gte = concat(prefix, at.gte);
+  else if(at.gt) x.gt = concat(prefix, at.gt);
+  else if(at.start && !r) x.gte = concat(prefix, at.start);
+  else if(at.end && r) x.gte = concat(prefix, at.end);
+  else x.gte = at.keyAsBuffer ? Buffer(prefix) : prefix;
 
-  if(at.lte) 
-    x.lte = concat(prefix, at.lte);
-  else if(at.lt) 
-    x.lt = concat(prefix, at.lt);
-  else if(at.end) 
-    x[r ? 'start':'end'] = concat(prefix, at.end);
-  else 
-    x[r ? 'start':'end'] = END;
+  if(at.lte) x.lte = concat(prefix, at.lte);
+  else if(at.lt) x.lt = concat(prefix, at.lt);
+  else if(at.end && !r) x.lte = concat(prefix, at.end);
+  else if(at.start && r) x.lte = concat(prefix, at.start);
+  else x.lte = concat(prefix, at.keyAsBuffer ? Buffer([0xff]) : '\xff');
 
   return x;
 }
@@ -57,7 +50,6 @@ module.exports = function(db){
     abs.AbstractIterator.call(this);
 
     var opts = ltgt(prefix, encoding(options));
-    console.log(opts, options);
 
     this._stream = db.createReadStream(opts);
     this._read = iterate(this._stream);
