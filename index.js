@@ -9,7 +9,7 @@ function concat(prefix, key) {
     return prefix + key;
   if (Buffer.isBuffer(key)) 
     return Buffer.concat([Buffer(prefix), key]);
-  return prefix + JSON.stringify(key);
+  return prefix + String(key);
 }
 
 function encoding(o) {
@@ -19,28 +19,48 @@ function encoding(o) {
   });
 }
 
-function ltgt(prefix, at){
-  if('gte' in at) at.gte = concat(prefix, at.gte);
-  else if('gt' in at) at.gt = concat(prefix, at.gt);
-  else at.start = at.keyAsBuffer ? Buffer(prefix) : prefix;
+function ltgt(prefix, x){
+  var r = !!x.reverse;
+  var at = xtend(x);
+  var START = at.keyAsBuffer ? Buffer(prefix) : prefix;
+  var END = concat(prefix, at.keyAsBuffer ? Buffer([0xff]) : '\xff');
 
-  if('lte' in at) at.lte = concat(prefix, at.lte);
-  else if('lt' in at) at.lt = concat(prefix, at.lt);
-  else at.lt = concat(prefix, at.keyAsBuffer ? Buffer([0xff]) : '\xff') ;
+  ['lte','gte','lt','gt','start','end'].forEach(function(key){
+    delete x[key];
+  });
 
-  return at;
+  if(at.gte) 
+    x.gte = concat(prefix, at.gte);
+  else if(at.gt) 
+    x.gt = concat(prefix, at.gt);
+  else if(at.start) 
+    x[r ? 'end':'start'] = concat(prefix, at.start);
+  else 
+    x[r ? 'end':'start'] = START;
+
+  if(at.lte) 
+    x.lte = concat(prefix, at.lte);
+  else if(at.lt) 
+    x.lt = concat(prefix, at.lt);
+  else if(at.end) 
+    x[r ? 'start':'end'] = concat(prefix, at.end);
+  else 
+    x[r ? 'start':'end'] = END;
+
+  return x;
 }
 
 module.exports = function(db){
   //db is levelup instance
 
   function PrefixIterator(prefix, options){
-    abs.AbstractIterator.call(this, down);
+    abs.AbstractIterator.call(this);
 
     var opts = ltgt(prefix, encoding(options));
+    console.log(opts, options);
 
     this._stream = db.createReadStream(opts);
-    this._iterate = iterate(this._stream);
+    this._read = iterate(this._stream);
     this._len = prefix.length;
   }
 
@@ -48,7 +68,7 @@ module.exports = function(db){
 
   PrefixIterator.prototype._next = function (cb) {
     var self = this;
-    this._iterate(function(err, data, next){
+    this._read(function(err, data, next){
       if(err) return cb(err);
       if(!data) return cb();
       next();
@@ -79,6 +99,8 @@ module.exports = function(db){
   };
 
   PrefixDOWN.prototype._put = function (key, value, options, cb) {
+    if(value === null || value === undefined)
+      value = options.asBuffer ? Buffer(0) : '';
     db.put(concat(this.prefix, key), value, encoding(options), cb);
   };
 
@@ -99,12 +121,14 @@ module.exports = function(db){
     var ops = new Array(operations.length);
     for (var i = 0, l = operations.length; i < l; i++) {
       var o = operations[i];
+      var isValBuf = Buffer.isBuffer(o.value);
+      var isKeyBuf = Buffer.isBuffer(o.key);
       ops[i] = xtend(o, {
         type: o.type, 
         key: concat(this.prefix, o.key), 
-        value: o.value,
-        keyEncoding: typeof o.key === 'string' ? 'utf8':'binary',
-        valueEncoding: typeof o.value === 'string' ? 'utf8':'binary'
+        value: isValBuf ? o.value : String(o.value),
+        keyEncoding: isKeyBuf ? 'binary':'utf8',
+        valueEncoding: isValBuf ? 'binary':'utf8'
       });
     }
     db.batch(ops, options, cb);
