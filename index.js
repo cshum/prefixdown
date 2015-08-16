@@ -85,6 +85,18 @@ module.exports = function(db){
 
   inherits(PrefixDOWN, abs.AbstractLevelDOWN);
 
+  PrefixDOWN.prototype._getPrefix = function(options){
+    //handle prefix options
+    if(options && options.prefix){
+      if(typeof options.prefix === 'string')
+        return options.prefix; //string prefix
+      if(options.prefix.options && options.prefix.options.db &&
+         options.prefix.options.db === PrefixDOWN)
+        return options.prefix.location; //levelup of prefixdown prefix
+    }
+    return this.prefix;
+  };
+
   PrefixDOWN.prototype._open = function (options, cb) {
     var self = this;
     setImmediate(function() { cb(null, self); });
@@ -93,15 +105,15 @@ module.exports = function(db){
   PrefixDOWN.prototype._put = function (key, value, options, cb) {
     if(value === null || value === undefined)
       value = options.asBuffer ? Buffer(0) : '';
-    db.put(concat(this.prefix, key), value, encoding(options), cb);
+    db.put(concat(this._getPrefix(options), key), value, encoding(options), cb);
   };
 
   PrefixDOWN.prototype._get = function (key, options, cb) {
-    db.get(concat(this.prefix, key), encoding(options), cb);
+    db.get(concat(this._getPrefix(options), key), encoding(options), cb);
   };
 
   PrefixDOWN.prototype._del = function (key, options, cb) {
-    db.del(concat(this.prefix, key), encoding(options), cb);
+    db.del(concat(this._getPrefix(options), key), encoding(options), cb);
   };
 
   PrefixDOWN.prototype._batch = function(operations, options, cb) {
@@ -117,7 +129,7 @@ module.exports = function(db){
       var isKeyBuf = Buffer.isBuffer(o.key);
       ops[i] = xtend(o, {
         type: o.type, 
-        key: concat(this.prefix, o.key), 
+        key: concat(this._getPrefix(o), o.key), 
         value: isValBuf ? o.value : String(o.value),
         keyEncoding: isKeyBuf ? 'binary':'utf8',
         valueEncoding: isValBuf ? 'binary':'utf8'
@@ -127,7 +139,7 @@ module.exports = function(db){
   };
 
   PrefixDOWN.prototype._iterator = function (options) {
-    return new PrefixIterator(this.prefix, options);
+    return new PrefixIterator(this._getPrefix(options), options);
   };
 
   PrefixDOWN.prototype._isBuffer = function (obj) {
