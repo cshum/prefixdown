@@ -88,6 +88,8 @@ module.exports = function(db){
   PrefixDOWN.prototype._getPrefix = function(options){
     //handle prefix options
     if(options && options.prefix){
+      if(options.prefix === db)
+        return ''; //no prefix for root db
       if(typeof options.prefix === 'string')
         return options.prefix; //string prefix
       if(options.prefix.options && options.prefix.options.db &&
