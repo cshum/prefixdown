@@ -11,6 +11,7 @@ npm install prefixdown
 By exposing a [LevelDOWN](https://github.com/Level/abstract-leveldown) compatible module, PrefixDOWN does not modify, nor set a wrapper on top of current LevelUP instance. 
 So that it can be used on any existing LevelUP based libraries.
 
+
 ```js
 var levelup = require('levelup');
 var prefix = require('prefixdown');
@@ -32,6 +33,19 @@ dbA.put('foo', 'bar', function(){
   });
 });
 
+```
+
+## Batches
+PrefixDOWN supports `options.prefix` property. A batch operation can be applied into multiple sections under the same database.
+
+```js
+var dbA = levelup('!a!', {db: prefixdown });
+var dbB = levelup('!b!', {db: prefixdown });
+
+dbA.batch([
+  {key: 'key', value: 'a', type: 'put'}, //put under dbA
+  {key: 'key', value: 'b', type: 'put', prefix: dbB}, //put under dbB
+], ...);
 ```
 
 ## License
