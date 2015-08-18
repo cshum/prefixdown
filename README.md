@@ -12,9 +12,9 @@ By exposing a [LevelDOWN](https://github.com/Level/abstract-leveldown) compatibl
 So that it can be used on any existing LevelUP based libraries.
 
 ### prefixdown = require('prefixdown')(db)
-Create a new PrefixDOWN instance by wrapping the root LevelUP instance.
+PrefixDOWN factory for the root LevelUP instance.
 ### levelup(prefix, { db: prefixdown })
-PrefixDOWN to be consumed by LevelUP. Where `location` argument defines the `prefix`.
+PrefixDOWN consumed by [LevelUP](https://github.com/Level/levelup#ctor), where `location` argument defines the `prefix`.
 
 ```js
 var levelup = require('levelup');
