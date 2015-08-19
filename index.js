@@ -44,6 +44,9 @@ function ltgt(prefix, x){
 }
 
 module.exports = function(db){
+  //reuse prefixdown
+  if(db._prefixdown) return db._prefixdown;
+
   //db is levelup instance
 
   function PrefixIterator(prefix, options){
@@ -147,6 +150,8 @@ module.exports = function(db){
   PrefixDOWN.prototype._isBuffer = function (obj) {
     return Buffer.isBuffer(obj);
   };
+
+  db._prefixdown = PrefixDOWN;
 
   return PrefixDOWN;
 };
