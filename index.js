@@ -74,7 +74,7 @@ module.exports = function(db){
   PrefixIterator.prototype._end = function(cb){
     if (this._stream.destroy)
       this._stream.destroy();
-    setImmediate(cb);
+    cb();
   };
 
   function PrefixDOWN(prefix){
@@ -83,7 +83,7 @@ module.exports = function(db){
 
     abs.AbstractLevelDOWN.call(this, prefix);
 
-    this.prefix = prefix || '';
+    this.prefix = prefix;
   }
 
   inherits(PrefixDOWN, abs.AbstractLevelDOWN);
