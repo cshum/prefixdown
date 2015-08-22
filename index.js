@@ -1,8 +1,9 @@
 var abs          = require('abstract-leveldown'),
     inherits     = require('util').inherits,
     xtend        = require('xtend'),
-    iterate      = require('stream-iterate'),
-    setImmediate = global.setImmediate || process.nextTick;
+    iterate      = require('stream-iterate');
+
+var END = '\uffff';
 
 function concat(prefix, key) {
   if (typeof key === 'string') 
@@ -38,7 +39,7 @@ function ltgt(prefix, x){
   else if(at.lt) x.lt = concat(prefix, at.lt);
   else if(at.end && !r) x.lte = concat(prefix, at.end);
   else if(at.start && r) x.lte = concat(prefix, at.start);
-  else x.lte = concat(prefix, at.keyAsBuffer ? Buffer([0xff]) : '\xff');
+  else x.lte = concat(prefix, at.keyAsBuffer ? Buffer(END) : END);
 
   return x;
 }
@@ -100,11 +101,6 @@ module.exports = function(db){
         return options.prefix.location; //levelup of prefixdown prefix
     }
     return this.prefix;
-  };
-
-  PrefixDOWN.prototype._open = function (options, cb) {
-    var self = this;
-    setImmediate(function() { cb(null, self); });
   };
 
   PrefixDOWN.prototype._put = function (key, value, options, cb) {

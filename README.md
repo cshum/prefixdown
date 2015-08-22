@@ -10,6 +10,7 @@ npm install prefixdown
 
 By exposing a [LevelDOWN](https://github.com/Level/abstract-leveldown) compatible module, PrefixDOWN does not modify, nor set a wrapper on top of current LevelUP instance. 
 So that it can be used on any existing LevelUP based libraries.
+Inspired from [Subleveldown](https://github.com/mafintosh/subleveldown). 
 
 ### prefixdown = require('prefixdown')(db)
 PrefixDOWN factory for the root LevelUP instance.
