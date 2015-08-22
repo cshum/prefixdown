@@ -18,26 +18,12 @@ test('batch prefix', function(t){
   var dbB = levelup('!b!', {db: prefixdown });
   var dbC = levelup('!c!', {db: prefixdown });
 
-  dbA.batch([{
-    type: 'put',
-    key: 'foo',
-    value: 'b',
-    prefix: dbB
-  },{
-    type: 'put',
-    key: 'foo',
-    value: 'c',
-    prefix: '!c!'
-  },{
-    type: 'put',
-    key: 'foo',
-    value: 'a'
-  },{
-    type: 'put',
-    key: 'foo',
-    value: 'root',
-    prefix: db
-  }], function(){
+  dbA.batch([
+    { type: 'put', key: 'foo', value: 'b', prefix: dbB },
+    { type: 'put', key: 'foo', value: 'c', prefix: '!c!' },
+    { type: 'put', key: 'foo', value: 'a' },
+    { type: 'put', key: 'foo', value: 'root', prefix: db }
+  ], function(){
     db.get('foo', function(err, val){
       t.equal(val, 'root', 'root levelup prefix');
     });
