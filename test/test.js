@@ -1,18 +1,15 @@
 var test = require('tape');
+var leveldown = require('leveldown');
 var levelup = require('levelup');
-var memdown = require('memdown');
 var prefix = require('../');
 var testCommon = require('abstract-leveldown/testCommon');
 var testBuffer = require('memdown/testdata_b64');
 
-var db = levelup('db', { db: memdown });
+var db = levelup('test/db', {db: leveldown});
 var prefixdown = prefix(db);
 
 test('batch prefix', function(t){
   t.plan(4);
-  var db = levelup({db:memdown}); //root levelup instance
-  var prefixdown = prefix(db); //prefixdown factory
-
   //prefix as location
   var dbA = levelup('!a!', {db: prefixdown });
   var dbB = levelup('!b!', {db: prefixdown });

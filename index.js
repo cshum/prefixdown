@@ -75,7 +75,7 @@ module.exports = function(db){
   PrefixIterator.prototype._end = function(cb){
     if (this._stream.destroy)
       this._stream.destroy();
-    cb();
+    process.nextTick(cb);
   };
 
   function PrefixDOWN(prefix){
