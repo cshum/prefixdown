@@ -55,6 +55,10 @@ module.exports = function(db){
 
     var opts = ltgt(prefix, encoding(options));
 
+    //should emit key value object
+    opts.keys = true;
+    opts.values = true;
+
     this._stream = db.createReadStream(opts);
     this._read = iterate(this._stream);
     this._len = prefix.length;
