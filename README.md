@@ -18,24 +18,24 @@ PrefixDOWN factory for the root LevelUP instance.
 PrefixDOWN consumed by [LevelUP](https://github.com/Level/levelup#ctor), where `location` argument defines the `prefix`.
 
 ```js
-var levelup = require('levelup');
-var db = levelup('./db'); //root levelup instance
+var levelup = require('levelup')
+var db = levelup('./db') //root levelup instance
 
-var prefixdown = require('prefixdown')(db); //prefixdown factory
+var prefixdown = require('prefixdown')(db) //prefixdown factory
 
 //location as prefix
-var dbA = levelup('!a!', {db: prefixdown });
-var dbB = levelup('!b!', {db: prefixdown });
+var dbA = levelup('!a!', { db: prefixdown })
+var dbB = levelup('!b!', { db: prefixdown })
 
-dbA.put('foo', 'bar', function(){
-  dbB.put('foo', 'foo', function(){
-    db.createReadStream().on('data', function(data){
+dbA.put('foo', 'bar', function () {
+  dbB.put('foo', 'foo', function () {
+    db.createReadStream().on('data', function (data) {
       //Results from root db
       {key: '!a!foo', value: 'bar'}, 
       {key: '!b!foo', value: 'foo'}
-    });
-  });
-});
+    })
+  })
+})
 
 ```
 
@@ -43,13 +43,13 @@ dbA.put('foo', 'bar', function(){
 PrefixDOWN supports `options.prefix` property. A batch operation can be applied into multiple sections under the same database.
 
 ```js
-var dbA = levelup('!a!', {db: prefixdown });
-var dbB = levelup('!b!', {db: prefixdown });
+var dbA = levelup('!a!', { db: prefixdown })
+var dbB = levelup('!b!', { db: prefixdown })
 
 dbA.batch([
   {key: 'key', value: 'a', type: 'put'}, //put under dbA
-  {key: 'key', value: 'b', type: 'put', prefix: dbB}, //put under dbB
-], ...);
+  {key: 'key', value: 'b', type: 'put', prefix: dbB} //put under dbB
+], ...)
 ```
 
 ## License
