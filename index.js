@@ -5,7 +5,7 @@ var abs          = require('abstract-leveldown'),
 
 var END = '\uffff';
 
-function concat(prefix, key) {
+function concat (prefix, key) {
   if (typeof key === 'string') 
     return prefix + key;
   if (Buffer.isBuffer(key)) 
@@ -13,14 +13,14 @@ function concat(prefix, key) {
   return prefix + String(key);
 }
 
-function encoding(o) {
+function encoding (o) {
   return xtend(o, {
     keyEncoding: o.keyAsBuffer ? 'binary' : 'utf8',
     valueEncoding: (o.asBuffer || o.valueAsBuffer) ? 'binary' : 'utf8'
   });
 }
 
-function ltgt(prefix, x){
+function ltgt (prefix, x) {
   var r = !!x.reverse;
 
   var at = {};
@@ -44,13 +44,13 @@ function ltgt(prefix, x){
   return x;
 }
 
-module.exports = function(db){
+module.exports = function (db) {
   //reuse prefixdown
   if(db._prefixdown) return db._prefixdown;
 
   //db is levelup instance
 
-  function PrefixIterator(prefix, options){
+  function PrefixIterator (prefix, options) {
     abs.AbstractIterator.call(this);
 
     var opts = ltgt(prefix, encoding(options));
@@ -76,13 +76,13 @@ module.exports = function(db){
     });
   };
 
-  PrefixIterator.prototype._end = function(cb){
+  PrefixIterator.prototype._end = function (cb) {
     if (this._stream.destroy)
       this._stream.destroy();
     process.nextTick(cb);
   };
 
-  function PrefixDOWN(prefix){
+  function PrefixDOWN (prefix) {
     if (!(this instanceof PrefixDOWN))
       return new PrefixDOWN(prefix);
 
@@ -93,16 +93,21 @@ module.exports = function(db){
 
   inherits(PrefixDOWN, abs.AbstractLevelDOWN);
 
-  PrefixDOWN.prototype._getPrefix = function(options){
+  PrefixDOWN.prototype._getPrefix = function (options) {
     //handle prefix options
     if(options && options.prefix){
-      if(options.prefix === db)
+      var prefix = options.prefix;
+      if(prefix === db)
         return ''; //no prefix for root db
-      if(typeof options.prefix === 'string')
-        return options.prefix; //string prefix
-      if(options.prefix.options && options.prefix.options.db &&
-         options.prefix.options.db === PrefixDOWN)
-        return options.prefix.location; //levelup of prefixdown prefix
+      if(typeof prefix === 'string')
+        return prefix; //string prefix 
+      //levelup of prefixdown prefix
+      //levelup v2
+      if(prefix._db instanceof PrefixDOWN)
+        return prefix._db.location;
+      //levelup v1
+      if(prefix.options && prefix.options.db === PrefixDOWN)
+        return prefix.location;
     }
     return this.prefix;
   };
