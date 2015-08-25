@@ -70,7 +70,7 @@ module.exports = function (db) {
 
   PrefixIterator.prototype._next = function (cb) {
     var self = this
-    this._iterate.next(function (err, data, next) {
+    this._iterate(function (err, data) {
       if (err) return cb(err)
       if (!data) return cb()
       cb(err, data.key.slice(self._len), data.value)

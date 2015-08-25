@@ -1,53 +1,49 @@
 var through = require('through2')
-var EventEmitter = require('events').EventEmitter
-var inherits = require('util').inherits
 
-function Iterate (stream) {
-  if (!(this instanceof Iterate)) return new Iterate(stream)
+module.exports = function (stream) {
+  var cb = null
+  var wait = null
 
-  EventEmitter.call(this)
-  this._cb = null
-
-  var self = this
   stream
   .on('error', function (err) {
-    if (self._cb) {
-      self._cb(err)
+    if (cb) {
+      cb(err)
     } else {
-      self.once('callback', function () {
-        self._cb(err)
-      })
+      wait = function () {
+        wait = null
+        cb(err)
+      }
     }
   })
   .pipe(through.obj(function (data, _, next) {
-    if (self._cb) {
-      self._cb(null, data)
-      self._cb = null
+    if (cb) {
+      cb(null, data)
+      cb = null
       next()
     } else {
-      self.once('callback', function () {
-        self._cb(null, data)
-        self._cb = null
+      wait = function () {
+        wait = null
+        cb(null, data)
+        cb = null
         next()
-      })
+      }
     }
   }, function (next) {
-    if (self._cb) {
-      self._cb()
+    if (cb) {
+      cb()
       next()
     } else {
-      self.once('callback', function () {
-        self._cb()
+      wait = function () {
+        cb()
         next()
-      })
+      }
     }
   }))
-}
 
-inherits(Iterate, EventEmitter)
-
-Iterate.prototype.next = function (cb) {
-  this._cb = cb
-  this.emit('callback')
+  return function iterate (_cb) {
+    process.nextTick(function () {
+      cb = _cb
+      if (wait) wait()
+    })
+  }
 }
-module.exports = Iterate
