@@ -1,7 +1,7 @@
 var abs = require('abstract-leveldown')
 var inherits = require('util').inherits
 var xtend = require('xtend')
-var iterate = require('stream-iterate')
+var iterate = require('./iterate')
 
 var END = '\uffff'
 
@@ -62,7 +62,7 @@ module.exports = function (db) {
     opts.values = true
 
     this._stream = db.createReadStream(opts)
-    this._read = iterate(this._stream)
+    this._iterate = iterate(this._stream)
     this._len = prefix.length
   }
 
@@ -70,10 +70,9 @@ module.exports = function (db) {
 
   PrefixIterator.prototype._next = function (cb) {
     var self = this
-    this._read(function (err, data, next) {
+    this._iterate.next(function (err, data, next) {
       if (err) return cb(err)
       if (!data) return cb()
-      next()
       cb(err, data.key.slice(self._len), data.value)
     })
   }
