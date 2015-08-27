@@ -4,6 +4,9 @@ var levelup = require('levelup')
 var prefix = require('../')
 var testCommon = require('abstract-leveldown/testCommon')
 var testBuffer = require('memdown/testdata_b64')
+var callback = require('callback-stream')
+
+require('rimraf').sync('test/db')
 
 var db = levelup('test/db', { db: leveldown })
 var prefixdown = prefix(db)
@@ -15,8 +18,7 @@ test('Errors', function (t) {
   t.end()
 })
 
-test('batch prefix', function (t) {
-  t.plan(8)
+test('PrefixDOWN specific', function (t) {
   // prefix as location
   var dbA = levelup('!a!', { db: prefixdown })
   var dbB = levelup('!b!', { db: prefixdown })
@@ -28,22 +30,46 @@ test('batch prefix', function (t) {
     { type: 'put', key: 'foo', value: 'a' },
     { type: 'put', key: 'foo', value: 'root', prefix: db }
   ], function () {
-    db.get('foo', function (err, val) {
+    db.keyStream().pipe(callback.obj(function (err, list) {
       t.notOk(err)
-      t.equal(val, 'root', 'root levelup prefix')
-    })
-    dbA.get('foo', function (err, val) {
-      t.notOk(err)
-      t.equal(val, 'a', 'default prefix')
-    })
-    dbB.get('foo', function (err, val) {
-      t.notOk(err)
-      t.equal(val, 'b', 'levelup prefixdown prefix')
-    })
-    dbC.get('foo', function (err, val) {
-      t.notOk(err)
-      t.equal(val, 'c', 'string prefix')
-    })
+      t.deepEqual(list, [
+        '!a!foo',
+        '!b!foo',
+        '!c!foo',
+        'foo'
+      ])
+
+      db.get('foo', function (err, val) {
+        t.notOk(err)
+        t.equal(val, 'root', 'root levelup prefix')
+      })
+      dbA.get('foo', function (err, val) {
+        t.notOk(err)
+        t.equal(val, 'a', 'default prefix')
+      })
+      dbB.get('foo', function (err, val) {
+        t.notOk(err)
+        t.equal(val, 'b', 'levelup prefixdown prefix')
+      })
+      dbC.get('foo', function (err, val) {
+        t.notOk(err)
+        t.equal(val, 'c', 'string prefix')
+      })
+      prefixdown.destroy('!a!', function (err) {
+        t.notOk(err)
+        prefixdown.destroy('!c!', function (err) {
+          t.notOk(err)
+          db.keyStream().pipe(callback.obj(function (err, list) {
+            t.notOk(err)
+            t.deepEqual(list, [
+              '!b!foo',
+              'foo'
+            ], 'prefixdown.destroy()')
+            t.end()
+          }))
+        })
+      })
+    }))
   })
 
 })

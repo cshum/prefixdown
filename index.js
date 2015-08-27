@@ -2,6 +2,7 @@ var abs = require('abstract-leveldown')
 var inherits = require('util').inherits
 var xtend = require('xtend')
 var iterate = require('./iterate')
+var through = require('through2')
 
 var END = '\uffff'
 
@@ -157,6 +158,23 @@ module.exports = function prefixFactory (db) {
 
   PrefixDOWN.prototype._isBuffer = function (obj) {
     return Buffer.isBuffer(obj)
+  }
+
+  PrefixDOWN.destroy = function (prefix, options, cb) {
+    if (typeof options === 'function') {
+      cb = options
+    }
+    db.createKeyStream(ltgt(prefix, { keyEncoding: 'utf8' }))
+    .pipe(through.obj(
+      function (key, _, next) {
+        db.del(key, { keyEncoding: 'utf8' }, next)
+      },
+      function (next) {
+        cb(null)
+        next()
+      }
+    ))
+    .on('error', cb)
   }
 
   db._prefixdown = PrefixDOWN
