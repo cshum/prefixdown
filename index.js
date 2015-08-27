@@ -78,7 +78,11 @@ module.exports = function (db) {
   }
 
   PrefixIterator.prototype._end = function (cb) {
-    if (this._stream.destroy) this._stream.destroy()
+    if (this._stream && this._stream.destroy) {
+      this._stream.destroy()
+      delete this._stream
+      delete this._iterate
+    }
     process.nextTick(cb)
   }
 
@@ -113,15 +117,15 @@ module.exports = function (db) {
     if (value === null || value === undefined) {
       value = options.asBuffer ? Buffer(0) : ''
     }
-    db.put(concat(this._getPrefix(options), key), value, encoding(options), cb)
+    db.put(concat(this.prefix, key), value, encoding(options), cb)
   }
 
   PrefixDOWN.prototype._get = function (key, options, cb) {
-    db.get(concat(this._getPrefix(options), key), encoding(options), cb)
+    db.get(concat(this.prefix, key), encoding(options), cb)
   }
 
   PrefixDOWN.prototype._del = function (key, options, cb) {
-    db.del(concat(this._getPrefix(options), key), encoding(options), cb)
+    db.del(concat(this.prefix, key), encoding(options), cb)
   }
 
   PrefixDOWN.prototype._batch = function (operations, options, cb) {
@@ -145,7 +149,7 @@ module.exports = function (db) {
   }
 
   PrefixDOWN.prototype._iterator = function (options) {
-    return new PrefixIterator(this._getPrefix(options), options)
+    return new PrefixIterator(this.prefix, options)
   }
 
   PrefixDOWN.prototype._isBuffer = function (obj) {
