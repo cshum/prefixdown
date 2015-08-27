@@ -48,6 +48,9 @@ function ltgt (prefix, x) {
 
 module.exports = function (db) {
   // db is levelup instance
+  if (!db || db.toString() !== 'LevelUP') {
+    throw new Error('db must be a LevelUP instance.')
+  }
 
   // reuse prefixdown
   if (db._prefixdown) return db._prefixdown

@@ -8,6 +8,12 @@ var testBuffer = require('memdown/testdata_b64')
 var db = levelup('test/db', { db: leveldown })
 var prefixdown = prefix(db)
 
+test('Errors', function (t) {
+  t.throws(function () { prefix(leveldown) }, {
+    name: 'Error', message: 'db must be a LevelUP instance.'
+  }, 'invalid db throws')
+})
+
 test('batch prefix', function (t) {
   t.plan(8)
   // prefix as location
