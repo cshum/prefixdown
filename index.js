@@ -46,7 +46,7 @@ function ltgt (prefix, x) {
   return x
 }
 
-module.exports = function (db) {
+module.exports = function prefixFactory (db) {
   // db is levelup instance
   if (!db || db.toString() !== 'LevelUP') {
     throw new Error('db must be a LevelUP instance.')

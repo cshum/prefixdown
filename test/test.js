@@ -12,6 +12,7 @@ test('Errors', function (t) {
   t.throws(function () { prefix(leveldown) }, {
     name: 'Error', message: 'db must be a LevelUP instance.'
   }, 'invalid db throws')
+  t.end()
 })
 
 test('batch prefix', function (t) {
