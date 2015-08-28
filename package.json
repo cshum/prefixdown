@@ -30,6 +30,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "standard && node test/test.js"
+    "test": "standard && node test/test.js",
+    "test-pouchdb": "./test/pouchdb/test.sh"
   }
 }
