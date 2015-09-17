@@ -2,7 +2,6 @@ var abs = require('abstract-leveldown')
 var inherits = require('util').inherits
 var xtend = require('xtend')
 var iterate = require('stream-iterate')
-var through = require('through2')
 
 var END = '\uffff'
 
