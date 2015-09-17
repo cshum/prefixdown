@@ -1,6 +1,6 @@
 {
   "name": "prefixdown",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Prefix implemented using leveldowns",
   "dependencies": {
     "abstract-leveldown": "^2.4.0",
