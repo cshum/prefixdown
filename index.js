@@ -164,17 +164,19 @@ module.exports = function prefixFactory (db) {
     if (typeof options === 'function') {
       cb = options
     }
-    db.createKeyStream(ltgt(prefix, { keyEncoding: 'utf8' }))
-    .pipe(through.obj(
-      function (key, _, next) {
-        db.del(key, { keyEncoding: 'utf8' }, next)
-      },
-      function (next) {
-        cb(null)
-        next()
-      }
-    ))
-    .on('error', cb)
+    var read = iterate(db.createKeyStream(ltgt(prefix, { keyEncoding: 'utf8' })))
+    function loop () {
+      read(function (err, key, next) {
+        if (err) return cb(err)
+        if (!key) return cb(null)
+        db.del(key, { keyEncoding: 'utf8' }, function (err) {
+          if (err) return cb(err)
+          next()
+          loop()
+        })
+      })
+    }
+    loop()
   }
 
   db._prefixdown = PrefixDOWN
