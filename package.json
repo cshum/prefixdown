@@ -4,7 +4,7 @@
   "description": "Prefix implemented using leveldowns",
   "dependencies": {
     "abstract-leveldown": "^2.4.0",
-    "through2": "^2.0.0",
+    "stream-iterate": "^1.1.1",
     "xtend": "^4.0.0"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 var abs = require('abstract-leveldown')
 var inherits = require('util').inherits
 var xtend = require('xtend')
-var iterate = require('./iterate')
+var iterate = require('stream-iterate')
 var through = require('through2')
 
 var END = '\uffff'
@@ -74,9 +74,10 @@ module.exports = function prefixFactory (db) {
 
   PrefixIterator.prototype._next = function (cb) {
     var self = this
-    this._iterate(function (err, data) {
+    this._iterate(function (err, data, next) {
       if (err) return cb(err)
       if (!data) return cb()
+      next()
       cb(err, data.key.slice(self._len), data.value)
     })
   }
