@@ -71,7 +71,6 @@ test('PrefixDOWN specific', function (t) {
       })
     }))
   })
-
 })
 
 // compatibility with basic LevelDOWN API
