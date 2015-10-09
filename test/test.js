@@ -90,5 +90,4 @@ dbs.forEach(function (db) {
   require('abstract-leveldown/abstract/close-test').close(prefixdown, test, testCommon)
   require('abstract-leveldown/abstract/iterator-test').all(prefixdown, test, testCommon)
   require('abstract-leveldown/abstract/ranges-test').all(prefixdown, test, testCommon)
-
 })
