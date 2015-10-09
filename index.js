@@ -48,7 +48,10 @@ function ltgt (prefix, x) {
 
 module.exports = function prefixFactory (db) {
   // db is levelup instance
-  if (!db || db.toString() !== 'LevelUP') {
+  if (!db || (
+    db.toString() !== 'LevelUP' &&
+    typeof db.sublevel !== 'function'
+  )) {
     throw new Error('db must be a LevelUP instance.')
   }
 
@@ -64,6 +67,7 @@ module.exports = function prefixFactory (db) {
     opts.keys = true
     opts.values = true
 
+    this._opts = opts
     this._stream = db.createReadStream(opts)
     this._iterate = iterate(this._stream)
     this._len = prefix.length
@@ -77,7 +81,15 @@ module.exports = function prefixFactory (db) {
       if (err) return cb(err)
       if (!data) return cb()
       next()
-      cb(err, data.key.slice(self._len), data.value)
+      var key = data.key.slice(self._len)
+      var value = data.value
+      if (typeof key === 'string' && self._opts.keyAsBuffer) {
+        key = new Buffer(key)
+      }
+      if (typeof key === 'string' && self._opts.valueAsBuffer) {
+        value = new Buffer(value)
+      }
+      cb(err, key, value)
     })
   }
 
@@ -141,13 +153,13 @@ module.exports = function prefixFactory (db) {
       var o = operations[i]
       var isValBuf = Buffer.isBuffer(o.value)
       var isKeyBuf = Buffer.isBuffer(o.key)
-      ops[i] = xtend(o, {
+      ops[i] = {
         type: o.type,
         key: concat(this._getPrefix(o), o.key),
         value: isValBuf ? o.value : String(o.value),
         keyEncoding: isKeyBuf ? 'binary' : 'utf8',
         valueEncoding: isValBuf ? 'binary' : 'utf8'
-      })
+      }
     }
     db.batch(ops, options, cb)
   }
