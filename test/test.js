@@ -2,9 +2,9 @@ var test = require('tape')
 var leveldown = require('leveldown')
 var levelup = require('levelup')
 var levelSublevel = require('level-sublevel')
-var prefix = require('../')
+var prefixdown = require('../')
 var testCommon = require('abstract-leveldown/testCommon')
-var testBuffer = require('memdown/testdata_b64')
+var testBuffer = require('./testdata_b64')
 var callback = require('callback-stream')
 
 require('rimraf').sync('test/db')
@@ -13,20 +13,13 @@ var db = levelup('test/db', { db: leveldown })
 var subdb = levelSublevel(db).sublevel('whatever')
 var dbs = [db, subdb]
 
-test('Errors', function (t) {
-  t.throws(function () { prefix(leveldown) }, {
-    name: 'Error', message: 'db must be a LevelUP instance.'
-  }, 'invalid db throws')
-  t.end()
-})
-
 dbs.forEach(function (db) {
-  var prefixdown = prefix(db)
   test('PrefixDOWN specific', function (t) {
     // prefix as location
-    var dbA = levelup('!a!', { db: prefixdown })
-    var dbB = levelup('!b!', { db: prefixdown })
-    var dbC = levelup('!c!', { db: prefixdown })
+    var options = { db: prefixdown, levelup: db }
+    var dbA = levelup('!a!', options)
+    var dbB = levelup('!b!', options)
+    var dbC = levelup('!c!', options)
 
     dbA.batch([
       { type: 'put', key: 'foo', value: 'b', prefix: dbB },
@@ -53,22 +46,22 @@ dbs.forEach(function (db) {
         })
         dbB.get('foo', function (err, val) {
           t.notOk(err)
-          t.equal(val, 'b', 'levelup prefixdown prefix')
+          t.equal(val, 'b', 'levelup prefix prefix')
         })
         dbC.get('foo', function (err, val) {
           t.notOk(err)
           t.equal(val, 'c', 'string prefix')
         })
-        prefixdown.destroy('!a!', function (err) {
+        prefixdown.destroy(db, '!a!', function (err) {
           t.notOk(err)
-          prefixdown.destroy('!c!', function (err) {
+          prefixdown.destroy(db, '!c!', function (err) {
             t.notOk(err)
             db.keyStream().pipe(callback.obj(function (err, list) {
               t.notOk(err)
               t.deepEqual(list, [
                 '!b!foo',
                 'foo'
-              ], 'prefixdown.destroy()')
+              ], 'prefix.destroy()')
               t.end()
             }))
           })
@@ -78,16 +71,16 @@ dbs.forEach(function (db) {
   })
 
   // compatibility with basic LevelDOWN API
-  require('abstract-leveldown/abstract/leveldown-test').args(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/open-test').args(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/open-test').open(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/del-test').all(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/get-test').all(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/put-test').all(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/put-get-del-test').all(prefixdown, test, testCommon, testBuffer)
-  require('abstract-leveldown/abstract/batch-test').all(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/chained-batch-test').all(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/close-test').close(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/iterator-test').all(prefixdown, test, testCommon)
-  require('abstract-leveldown/abstract/ranges-test').all(prefixdown, test, testCommon)
+  var prefix = prefixdown(db)
+  require('abstract-leveldown/abstract/leveldown-test').args(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/open-test').args(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/del-test').all(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/get-test').all(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/put-test').all(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/put-get-del-test').all(prefix, test, testCommon, testBuffer)
+  require('abstract-leveldown/abstract/batch-test').all(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/chained-batch-test').all(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/close-test').close(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/iterator-test').all(prefix, test, testCommon)
+  require('abstract-leveldown/abstract/ranges-test').all(prefix, test, testCommon)
 })
