@@ -18,10 +18,9 @@ var dbs = [
 dbs.forEach(function (db) {
   test('PrefixDOWN specific', function (t) {
     // prefix as location
-    var options = { db: prefixdown, levelup: db }
-    var dbA = levelup('!a!', options)
-    var dbB = levelup('!b!', options)
-    var dbC = levelup('!c!', options)
+    var dbA = levelup('!a!', { db: prefixdown, levelup: db })
+    var dbB = levelup('!b!', { db: prefixdown, levelup: db })
+    var dbC = levelup('!c!', { db: prefixdown(db) })
 
     dbA.batch([
       { type: 'put', key: 'foo', value: 'b', prefix: dbB },
