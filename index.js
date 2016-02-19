@@ -112,7 +112,7 @@ function PrefixDOWN (levelup, location) {
 
   if (!(this instanceof PrefixDOWN)) return new PrefixDOWN(levelup, location)
 
-  this._levelup = levelup
+  this.db = levelup
   abs.AbstractLevelDOWN.call(this, location)
 }
 
@@ -123,7 +123,7 @@ PrefixDOWN.prototype._getPrefix = function (options) {
   if (options && options.prefix) {
     var prefix = options.prefix
     // no prefix for root db
-    if (prefix === this._levelup) return ''
+    if (prefix === this.db) return ''
     // string prefix
     if (typeof prefix === 'string') return prefix
     // levelup of prefixdown prefix
@@ -138,8 +138,8 @@ PrefixDOWN.prototype._getPrefix = function (options) {
 }
 
 PrefixDOWN.prototype._open = function (options, callback) {
-  this._levelup = this._levelup || options.levelup
-  if (!isLevelUP(this._levelup)) {
+  this.db = this.db || options.levelup
+  if (!isLevelUP(this.db)) {
     return callback(new Error('db must be a LevelUP instance.'))
   }
   process.nextTick(callback)
@@ -149,20 +149,20 @@ PrefixDOWN.prototype._put = function (key, value, options, cb) {
   if (value === null || value === undefined) {
     value = options.asBuffer ? Buffer(0) : ''
   }
-  this._levelup.put(concat(this.location, key), value, encoding(options), cb)
+  this.db.put(concat(this.location, key), value, encoding(options), cb)
 }
 
 PrefixDOWN.prototype._get = function (key, options, cb) {
-  this._levelup.get(concat(this.location, key), encoding(options), cb)
+  this.db.get(concat(this.location, key), encoding(options), cb)
 }
 
 PrefixDOWN.prototype._del = function (key, options, cb) {
-  this._levelup.del(concat(this.location, key), encoding(options), cb)
+  this.db.del(concat(this.location, key), encoding(options), cb)
 }
 
 PrefixDOWN.prototype._batch = function (operations, options, cb) {
   if (arguments.length === 0) return new abs.AbstractChainedBatch(this)
-  if (!Array.isArray(operations)) return this._levelup.batch.apply(null, arguments)
+  if (!Array.isArray(operations)) return this.db.batch.apply(null, arguments)
 
   var ops = new Array(operations.length)
   for (var i = 0, l = operations.length; i < l; i++) {
@@ -177,11 +177,11 @@ PrefixDOWN.prototype._batch = function (operations, options, cb) {
       valueEncoding: isValBuf ? 'binary' : 'utf8'
     }
   }
-  this._levelup.batch(ops, options, cb)
+  this.db.batch(ops, options, cb)
 }
 
 PrefixDOWN.prototype._iterator = function (options) {
-  return new PrefixIterator(this._levelup, this.location, options)
+  return new PrefixIterator(this.db, this.location, options)
 }
 
 PrefixDOWN.prototype._isBuffer = function (obj) {

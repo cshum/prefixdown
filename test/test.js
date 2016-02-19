@@ -10,8 +10,10 @@ var callback = require('callback-stream')
 require('rimraf').sync('test/db')
 
 var db = levelup('test/db', { db: leveldown })
-var subdb = levelSublevel(db).sublevel('whatever')
-var dbs = [db, subdb]
+var dbs = [
+  db,
+  levelSublevel(db).sublevel('level-sublevel')
+]
 
 dbs.forEach(function (db) {
   test('PrefixDOWN specific', function (t) {
@@ -62,7 +64,7 @@ dbs.forEach(function (db) {
                 '!b!foo',
                 'foo'
               ], 'prefix.destroy()')
-              t.end()
+              prefixdown.destroy(db, '!b!', t.end)
             }))
           })
         })
