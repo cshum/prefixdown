@@ -10,9 +10,7 @@ npm install prefixdown
 
 By exposing a [LevelDOWN](https://github.com/Level/abstract-leveldown) compatible module, PrefixDOWN does not modify, nor set a wrapper on top of current LevelUP instance. 
 So that it can be used on any existing LevelUP based libraries.
-Inspired from [Subleveldown](https://github.com/mafintosh/subleveldown). 
 
-PrefixDOWN factory for the root LevelUP instance.
 ### levelup(prefix, { db: prefixdown, levelup: db })
 ### levelup(prefix, { db: prefixdown(db) })
 PrefixDOWN on top of [LevelUP](https://github.com/Level/levelup#ctor), where `location` argument defines the `prefix`.
@@ -27,13 +25,12 @@ var db = levelup('./db') //root levelup instance
 var dbA = levelup('!a!', { db: prefixdown, levelup: db })
 var dbB = levelup('!b!', { db: prefixdown(db) })
 
-dbA.put('foo', 'bar', function () {
-  dbB.put('foo', 'foo', function () {
-    db.createReadStream().on('data', function (data) {
-      //Results from root db
-      {key: '!a!foo', value: 'bar'}, 
-      {key: '!b!foo', value: 'foo'}
-    })
+dbA.put('foo', 'hello', function () {
+  dbB.put('foo', 'world', function () {
+    db.createReadStream().on('data', ...)
+    //Results from root db
+    //{key: '!a!foo', value: 'hello'}
+    //{key: '!b!foo', value: 'world'}
   })
 })
 
@@ -47,9 +44,16 @@ var dbA = levelup('!a!', { db: prefixdown, levelup: db })
 var dbB = levelup('!b!', { db: prefixdown, levelup: db })
 
 dbA.batch([
-  {key: 'key', value: 'a', type: 'put'}, //put under dbA
-  {key: 'key', value: 'b', type: 'put', prefix: dbB} //put under dbB
-], ...)
+  {key: 'foo', value: 'a', type: 'put'},
+  {key: 'foo', value: 'b', type: 'put', prefix: dbB } // options.prefix
+], function (err) {
+  dbA.get('foo', function (err, val) {
+    console.log(val) // a
+  });
+  dbB.get('foo', function (err, val) {
+    console.log(val) // b
+  });
+})
 ```
 
 ## License
